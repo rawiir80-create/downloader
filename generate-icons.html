@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Generate PWA Icons</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 40px auto; padding: 20px; background: #0A0F1A; color: #F1F5F9; }
+    h1 { font-size: 1.5rem; margin-bottom: 1rem; }
+    p { color: #94A3B8; margin-bottom: 1.5rem; }
+    .btn { display: inline-block; background: #0066FF; color: white; padding: 14px 28px; border-radius: 12px; font-weight: 600; font-size: 1rem; border: none; cursor: pointer; text-decoration: none; }
+    .btn:hover { background: #0052CC; }
+    .status { margin-top: 1rem; padding: 1rem; background: #161D2E; border-radius: 8px; font-family: monospace; font-size: 0.875rem; white-space: pre-wrap; }
+    .icon-preview { width: 128px; height: 128px; border-radius: 24px; margin: 1rem auto; background: linear-gradient(135deg, #0066FF 0%, #0044AA 100%); display: flex; align-items: center; justify-content: center; }
+    .icon-preview svg { width: 64px; height: 64px; }
+  </style>
+</head>
+<body>
+  <div class="icon-preview">
+    <svg viewBox="0 0 512 512" fill="none" stroke="white" stroke-width="32" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M384 192V384c0 35.3-28.7 64-64 64H192c-35.3 0-64-28.7-64-64V192"/>
+      <polyline points="192 256 256 320 320 256"/>
+      <line x1="256" y1="320" x2="256" y2="128"/>
+    </svg>
+  </div>
+  <h1>Generate PWA Icons</h1>
+  <p>Click the button below to generate all required PNG icon sizes for the Downloader PWA. The files will download automatically.</p>
+  <button class="btn" id="generateBtn">Generate & Download All Icons</button>
+  <div class="status" id="status">Ready to generate icons...</div>
+
+  <script>
+    const sizes = [72, 96, 128, 144, 152, 192, 384, 512];
+    const statusEl = document.getElementById('status');
+    const btn = document.getElementById('generateBtn');
+
+    function drawIcon(ctx, size) {
+      const radius = size * 0.1875; // 96/512 ratio
+      // Background gradient
+      const grad = ctx.createLinearGradient(0, 0, size, size);
+      grad.addColorStop(0, '#0066FF');
+      grad.addColorStop(1, '#0044AA');
+      ctx.fillStyle = grad;
+      roundRect(ctx, 0, 0, size, size, radius);
+      ctx.fill();
+
+      // Draw download icon
+      ctx.strokeStyle = 'white';
+      ctx.lineWidth = size * 0.0625; // 32/512
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+
+      const cx = size / 2;
+      const cy = size / 2;
+      const scale = size / 512;
+      const iconSize = 192 * scale; // 192 is the icon height in SVG
+
+      // Folder/path
+      ctx.beginPath();
+      ctx.moveTo(cx + 128 * scale, cy - 64 * scale);
+      ctx.lineTo(cx + 128 * scale, cy + 128 * scale);
+      ctx.lineTo(cx - 128 * scale, cy + 128 * scale);
+      ctx.lineTo(cx - 128 * scale, cy - 64 * scale);
+      ctx.stroke();
+
+      // Arrow
+      ctx.beginPath();
+      ctx.moveTo(cx - 64 * scale, cy + 64 * scale);
+      ctx.lineTo(cx, cy + 128 * scale);
+      ctx.lineTo(cx + 64 * scale, cy + 64 * scale);
+      ctx.stroke();
+
+      // Vertical line
+      ctx.beginPath();
+      ctx.moveTo(cx, cy + 128 * scale);
+      ctx.lineTo(cx, cy - 64 * scale);
+      ctx.stroke();
+    }
+
+    function roundRect(ctx, x, y, w, h, r) {
+      ctx.beginPath();
+      ctx.moveTo(x + r, y);
+      ctx.lineTo(x + w - r, y);
+      ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+      ctx.lineTo(x + w, y + h - r);
+      ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+      ctx.lineTo(x + r, y + h);
+      ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+      ctx.lineTo(x, y + r);
+      ctx.quadraticCurveTo(x, y, x + r, y);
+      ctx.closePath();
+    }
+
+    async function generateIcons() {
+      btn.disabled = true;
+      statusEl.textContent = 'Generating icons...\n';
+      
+      for (const size of sizes) {
+        const canvas = document.createElement('canvas');
+        canvas.width = size;
+        canvas.height = size;
+        const ctx = canvas.getContext('2d');
+        
+        drawIcon(ctx, size);
+        
+        const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+        const url = URL.createObjectURL(blob);
+        
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `icon-${size}.png`;
+        a.click();
+        URL.revokeObjectURL(url);
+        
+        statusEl.textContent += `✓ icon-${size}.png\n`;
+        await new Promise(r => setTimeout(r, 100));
+      }
+      
+      statusEl.textContent += '\nAll icons generated! Move them to the downloader folder.';
+      btn.disabled = false;
+    }
+
+    btn.addEventListener('click', generateIcons);
+  </script>
+</body>
+</html>

@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#0066FF">
+  <meta name="description" content="Modern Download Manager - Fast, simple, reliable downloads">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Downloader">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/svg+xml" href="icon.svg">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <title>Downloader</title>
+  <style>
+    :root {
+      --bg: #0A0F1A;
+      --bg-elevated: #111827;
+      --bg-card: #161D2E;
+      --fg: #F1F5F9;
+      --fg-muted: #64748B;
+      --accent: #0066FF;
+      --accent-hover: #0052CC;
+      --accent-light: #1E3A5F;
+      --success: #10B981;
+      --warning: #F59E0B;
+      --error: #EF4444;
+      --border: #1E293B;
+      --border-hover: #334155;
+      --radius: 12px;
+      --radius-sm: 8px;
+      --shadow: 0 4px 24px rgba(0,0,0,0.4);
+      --shadow-sm: 0 2px 8px rgba(0,0,0,0.3);
+      --transition: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+      --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+      --mono: 'SF Mono', 'Fira Code', monospace;
+    }
+
+    @media (prefers-color-scheme: light) {
+      :root {
+        --bg: #F8FAFC;
+        --bg-elevated: #FFFFFF;
+        --bg-card: #F1F5F9;
+        --fg: #0F172A;
+        --fg-muted: #64748B;
+        --accent: #0066FF;
+        --accent-hover: #0052CC;
+        --accent-light: #DBEAFE;
+        --border: #E2E8F0;
+        --border-hover: #CBD5E1;
+        --shadow: 0 4px 24px rgba(0,0,0,0.08);
+        --shadow-sm: 0 2px 8px rgba(0,0,0,0.05);
+      }
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { font-size: 16px; -webkit-text-size-adjust: 100%; }
+    body {
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--fg);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    /* Header */
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+      backdrop-filter: saturate(180%) blur(20px);
+      padding: env(safe-area-inset-top) 16px 12px;
+    }
+    .header-content {
+      max-width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 700;
+      font-size: 1.125rem;
+      letter-spacing: -0.02em;
+      color: var(--fg);
+    }
+    .logo svg { width: 28px; height: 28px; color: var(--accent); flex-shrink: 0; }
+    .header-actions { display: flex; align-items: center; gap: 8px; }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 10px 16px;
+      border-radius: var(--radius-sm);
+      font-size: 0.875rem;
+      font-weight: 500;
+      font-family: inherit;
+      cursor: pointer;
+      border: none;
+      transition: all var(--transition);
+      text-decoration: none;
+      white-space: nowrap;
+      touch-action: manipulation;
+    }
+    .btn:active { transform: scale(0.98); }
+    .btn-primary {
+      background: var(--accent);
+      color: white;
+    }
+    .btn-primary:hover { background: var(--accent-hover); }
+    .btn-secondary {
+      background: var(--bg-card);
+      color: var(--fg);
+      border: 1px solid var(--border);
+    }
+    .btn-secondary:hover { background: var(--bg-elevated); border-color: var(--border-hover); }
+    .btn-ghost {
+      background: transparent;
+      color: var(--fg-muted);
+      padding: 8px;
+    }
+    .btn-ghost:hover { background: var(--bg-card); color: var(--fg); }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+    .btn svg { width: 20px; height: 20px; flex-shrink: 0; }
+
+    /* Main */
+    main { flex: 1; padding: 16px; padding-bottom: max(16px, env(safe-area-inset-bottom) + 16px); }
+    .container { max-width: 640px; margin: 0 auto; width: 100%; }
+
+    /* Add URL Section */
+    .add-section {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      margin-bottom: 16px;
+      animation: slideDown 300ms var(--transition);
+    }
+    @keyframes slideDown {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .add-section.hidden { display: none; }
+    .add-form { display: flex; flex-direction: column; gap: 12px; }
+    .input-group { display: flex; flex-direction: column; gap: 6px; }
+    .input-group label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--fg-muted);
+    }
+    .input-wrapper { position: relative; display: flex; align-items: center; }
+    .input-wrapper svg { position: absolute; left: 12px; width: 20px; height: 20px; color: var(--fg-muted); pointer-events: none; }
+    .input-wrapper input, .input-wrapper select {
+      width: 100%;
+      padding: 12px 16px 12px 44px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--fg);
+      font-size: 0.9375rem;
+      font-family: inherit;
+      transition: all var(--transition);
+    }
+    .input-wrapper input:focus, .input-wrapper select:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-light);
+    }
+    .input-wrapper input::placeholder { color: var(--fg-muted); }
+    .add-form .btn-primary { width: 100%; padding: 14px; font-size: 1rem; }
+
+    /* Downloads List */
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+      padding: 0 4px;
+    }
+    .section-title {
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: var(--fg-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .section-count { color: var(--fg-muted); font-size: 0.875rem; }
+    .downloads-list { display: flex; flex-direction: column; gap: 8px; }
+    .empty-state {
+      text-align: center;
+      padding: 48px 16px;
+      color: var(--fg-muted);
+    }
+    .empty-state svg { width: 64px; height: 64px; margin-bottom: 16px; opacity: 0.5; }
+    .empty-state h3 { font-size: 1rem; font-weight: 600; color: var(--fg); margin-bottom: 4px; }
+    .empty-state p { font-size: 0.875rem; }
+
+    /* Download Item */
+    .download-item {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      animation: slideIn 250ms var(--transition);
+    }
+    @keyframes slideIn { from { opacity: 0; transform: translateX(-20px); } to { opacity: 1; transform: translateX(0); } }
+    .download-item.removing { animation: slideOut 200ms var(--transition) forwards; }
+    @keyframes slideOut { to { opacity: 0; transform: translateX(20px); height: 0; margin: 0; padding: 0; border: none; } }
+    .item-header { display: flex; gap: 12px; padding: 14px 16px; }
+    .item-icon {
+      width: 44px; height: 44px; border-radius: var(--radius-sm);
+      background: var(--bg);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; color: var(--accent);
+    }
+    .item-icon svg { width: 22px; height: 22px; }
+    .item-info { flex: 1; min-width: 0; }
+    .item-filename { font-weight: 500; font-size: 0.9375rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .item-meta { display: flex; align-items: center; gap: 10px; margin-top: 4px; font-size: 0.75rem; color: var(--fg-muted); }
+    .item-meta span { display: flex; align-items: center; gap: 4px; }
+    .item-meta svg { width: 14px; height: 14px; }
+    .item-status { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; min-width: 60px; }
+    .status-badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 4px 10px; border-radius: 999px;
+      font-size: 0.6875rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.03em;
+    }
+    .status-downloading { background: var(--accent-light); color: var(--accent); }
+    .status-paused { background: #FEF3C7; color: #B45309; }
+    .status-complete { background: #D1FAE5; color: #065F46; }
+    .status-error { background: #FEE2E2; color: #991B1B; }
+    .status-queued { background: var(--bg); color: var(--fg-muted); border: 1px solid var(--border); }
+    @media (prefers-color-scheme: light) {
+      .status-paused { background: #FEF3C7; color: #B45309; }
+      .status-complete { background: #D1FAE5; color: #065F46; }
+      .status-error { background: #FEE2E2; color: #991B1B; }
+    }
+    .progress-bar {
+      width: 100%; height: 4px; background: var(--bg); border-radius: 2px; overflow: hidden;
+      margin-top: 12px;
+    }
+    .progress-fill {
+      height: 100%; background: var(--accent); border-radius: 2px;
+      transition: width 300ms var(--transition), background 300ms var(--transition);
+      transform-origin: left;
+    }
+    .progress-fill.paused { background: var(--warning); }
+    .progress-fill.error { background: var(--error); }
+    .progress-fill.complete { background: var(--success); }
+    .item-actions { display: flex; gap: 8px; padding: 0 16px 14px; border-top: 1px solid var(--border); margin-top: 8px; }
+    .item-actions .btn { flex: 1; padding: 10px; font-size: 0.8125rem; }
+    .speed-eta { font-family: var(--mono); font-size: 0.75rem; color: var(--fg-muted); }
+
+    /* Settings Modal */
+    .modal-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(4px); z-index: 1000;
+      display: flex; align-items: flex-end; padding: 16px;
+      opacity: 0; visibility: hidden; transition: all 200ms var(--transition);
+    }
+    .modal-overlay.open { opacity: 1; visibility: visible; }
+    .modal {
+      background: var(--bg-elevated); border: 1px solid var(--border);
+      border-radius: var(--radius) var(--radius) 0 0; width: 100%; max-width: 640px;
+      max-height: 85vh; overflow-y: auto;
+      transform: translateY(20px); transition: transform 200ms var(--transition);
+    }
+    .modal-overlay.open .modal { transform: translateY(0); }
+    .modal-header { display: flex; align-items: center; justify-content: space-between; padding: 16px; border-bottom: 1px solid var(--border); }
+    .modal-title { font-size: 1rem; font-weight: 600; }
+    .modal-body { padding: 16px; }
+    .setting-group { margin-bottom: 20px; }
+    .setting-group:last-child { margin-bottom: 0; }
+    .setting-label { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+    .setting-label-text { font-weight: 500; }
+    .setting-label-desc { font-size: 0.8125rem; color: var(--fg-muted); }
+    .toggle { position: relative; width: 48px; height: 28px; }
+    .toggle input { opacity: 0; width: 0; height: 0; }
+    .toggle-slider {
+      position: absolute; inset: 0; background: var(--border); border-radius: 999px;
+      transition: background var(--transition);
+    }
+    .toggle-slider::before {
+      content: ''; position: absolute; top: 3px; left: 3px; width: 22px; height: 22px;
+      background: white; border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+      transition: transform var(--transition);
+    }
+    .toggle input:checked + .toggle-slider { background: var(--accent); }
+    .toggle input:checked + .toggle-slider::before { transform: translateX(20px); }
+    .select-wrapper select {
+      width: 100%; padding: 12px 16px; background: var(--bg); border: 1px solid var(--border);
+      border-radius: var(--radius-sm); color: var(--fg); font-size: 0.9375rem; font-family: inherit;
+    }
+
+    /* Toast */
+    .toast-container { position: fixed; bottom: 24px; left: 16px; right: 16px; z-index: 2000; display: flex; flex-direction: column; gap: 8px; pointer-events: none; max-width: 640px; margin: 0 auto; }
+    .toast { background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; display: flex; align-items: center; gap: 12px; box-shadow: var(--shadow); animation: toastIn 250ms var(--transition); pointer-events: auto; }
+    @keyframes toastIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    .toast.removing { animation: toastOut 200ms var(--transition) forwards; }
+    @keyframes toastOut { to { opacity: 0; transform: translateX(100%); } }
+    .toast svg { width: 22px; height: 22px; flex-shrink: 0; }
+    .toast-success svg { color: var(--success); }
+    .toast-error svg { color: var(--error); }
+    .toast-info svg { color: var(--accent); }
+    .toast-content { flex: 1; }
+    .toast-title { font-weight: 500; font-size: 0.875rem; }
+    .toast-message { font-size: 0.8125rem; color: var(--fg-muted); margin-top: 2px; }
+
+    /* Install Banner */
+    .install-banner {
+      position: fixed; bottom: 24px; left: 16px; right: 16px; z-index: 1500;
+      max-width: 640px; margin: 0 auto; animation: slideUp 300ms var(--transition);
+    }
+    @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    .install-banner.hidden { display: none; }
+    .install-card {
+      background: linear-gradient(135deg, var(--accent) 0%, #0044AA 100%);
+      color: white; border-radius: var(--radius); padding: 16px; box-shadow: var(--shadow);
+      display: flex; align-items: center; justify-content: space-between; gap: 16px;
+    }
+    .install-info h4 { font-size: 0.9375rem; font-weight: 600; margin-bottom: 2px; }
+    .install-info p { font-size: 0.8125rem; opacity: 0.9; }
+    .install-card .btn { background: white; color: var(--accent); }
+    .install-card .btn:hover { background: rgba(255,255,255,0.9); }
+
+    /* Reduced motion */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+    }
+
+    /* Focus visible */
+    :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="header-content">
+      <div class="logo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        <span>Downloader</span>
+      </div>
+      <div class="header-actions">
+        <button class="btn btn-ghost" id="settingsBtn" aria-label="Settings">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <div class="container">
+      <!-- Add URL Section -->
+      <section class="add-section" id="addSection">
+        <form class="add-form" id="addForm">
+          <div class="input-group">
+            <label for="urlInput">Download URL</label>
+            <div class="input-wrapper">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 0 1-9 9c2.52 0 4.93-1 6.74-2.74L21 8"/><path d="M21 3a5 5 0 0 1-5 5"/><path d="M3 21c0-2.52 1-4.93 2.74-6.74L3 16"/><path d="M3 16c0 2.52 1 4.93 2.74 6.74L3 21"/></svg>
+              <input type="url" id="urlInput" placeholder="https://example.com/file.zip" required autocomplete="url" aria-label="Download URL">
+            </div>
+          </div>
+          <div class="input-group">
+            <label for="filenameInput">Filename (optional)</label>
+            <div class="input-wrapper">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+              <input type="text" id="filenameInput" placeholder="Auto-detect from URL" autocomplete="off" aria-label="Filename">
+            </div>
+          </div>
+          <button type="submit" class="btn btn-primary">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Start Download
+          </button>
+        </form>
+      </section>
+
+      <!-- Downloads List -->
+      <div class="section-header">
+        <h2 class="section-title">Downloads</h2>
+        <span class="section-count" id="downloadCount">0</span>
+      </div>
+      <div class="downloads-list" id="downloadsList" role="list" aria-label="Active downloads">
+        <div class="empty-state" id="emptyState">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          <h3>No downloads yet</h3>
+          <p>Add a URL above to start downloading</p>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Settings Modal -->
+  <div class="modal-overlay" id="settingsModal" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 class="modal-title" id="settingsTitle">Settings</h2>
+        <button class="btn btn-ghost" id="closeSettings" aria-label="Close settings">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="setting-group">
+          <div class="setting-label">
+            <span class="setting-label-text">Auto-open completed</span>
+            <span class="setting-label-desc">Open files automatically after download</span>
+          </div>
+          <label class="toggle"><input type="checkbox" id="autoOpenToggle" checked><span class="toggle-slider"></span></label>
+        </div>
+        <div class="setting-group">
+          <div class="setting-label">
+            <span class="setting-label-text">Concurrent downloads</span>
+            <span class="setting-label-desc">Maximum simultaneous downloads</span>
+          </div>
+          <div class="select-wrapper">
+            <select id="concurrentSelect" aria-label="Concurrent downloads">
+              <option value="1">1 at a time</option>
+              <option value="2" selected>2 at a time</option>
+              <option value="3">3 at a time</option>
+              <option value="4">4 at a time</option>
+            </select>
+          </div>
+        </div>
+        <div class="setting-group">
+          <div class="setting-label">
+            <span class="setting-label-text">Show notifications</span>
+            <span class="setting-label-desc">Browser notifications for completed downloads</span>
+          </div>
+          <label class="toggle"><input type="checkbox" id="notifyToggle" checked><span class="toggle-slider"></span></label>
+        </div>
+        <div class="setting-group">
+          <div class="setting-label">
+            <span class="setting-label-text">Keep screen awake</span>
+            <span class="setting-label-desc">Prevent sleep during active downloads</span>
+          </div>
+          <label class="toggle"><input type="checkbox" id="wakeLockToggle"><span class="toggle-slider"></span></label>
+        </div>
+        <div class="setting-group">
+          <div class="setting-label">
+            <span class="setting-label-text">Clear history</span>
+            <span class="setting-label-desc">Remove all completed downloads from list</span>
+          </div>
+          <button class="btn btn-secondary" id="clearHistoryBtn" style="width: 100%;">Clear History</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div class="toast-container" id="toastContainer" aria-live="polite" aria-atomic="true"></div>
+
+  <!-- Install Banner -->
+  <div class="install-banner hidden" id="installBanner">
+    <div class="install-card">
+      <div class="install-info">
+        <h4>Install Downloader</h4>
+        <p>Add to home screen for app-like experience</p>
+      </div>
+      <button class="btn" id="installBtn">Install</button>
+    </div>
+  </div>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>
