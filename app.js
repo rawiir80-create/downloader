@@ -1,5 +1,6 @@
 // Downloader PWA - Main Application Logic
 // Handles downloads, IndexedDB persistence, UI updates, notifications
+import { isMediaUrl, resolveMedia, platformKey } from './media.js';
 
 const DB_NAME = 'DownloaderDB';
 const DB_VERSION = 1;
@@ -32,6 +33,29 @@ const T = {
     autoDetect: 'يستخرج تلقائياً من الرابط',
     startDownload: 'بدء التحميل',
     openInCobalt: 'فتح في Cobalt (لليوتيوب والمواقع المدعومة)',
+    openExternal: 'فتح في Cobalt خارجياً',
+    mediaVideo: 'تحميل فيديو',
+    mediaAudio: 'تحميل صوت MP3',
+    mediaDetected: 'منصة مدعومة — اختر النوع:',
+    resolving: 'جاري استخراج رابط التحميل…',
+    mediaReady: 'تم تجهيز الرابط — بدأ التحميل',
+    mediaFail: 'فشل الاستخراج من كل السيرفرات',
+    mediaFailHint: 'جرب زر (فتح في Cobalt خارجياً) أو أعد المحاولة لاحقاً',
+    platform_youtube: 'يوتيوب',
+    platform_tiktok: 'تيك توك',
+    platform_instagram: 'انستقرام',
+    platform_twitter: 'تويتر / X',
+    platform_facebook: 'فيسبوك',
+    platform_soundcloud: 'ساوندكلاود',
+    platform_vk: 'VK',
+    platform_dailymotion: 'ديلي موشن',
+    platform_twitch: 'تويتش',
+    platform_pinterest: 'بينترست',
+    platform_tumblr: 'تمبلر',
+    platform_bilibili: 'بيلي بيلي',
+    platform_rutube: 'روتيوب',
+    platform_bluesky: 'بلوسكاي',
+    platform_other: 'منصة مدعومة',
     settings: 'الإعدادات',
     autoOpen: 'فتح تلقائي بعد التحميل',
     autoOpenDesc: 'فتح الملفات تلقائياً بعد اكتمال التحميل',
@@ -79,6 +103,29 @@ const T = {
     autoDetect: 'Auto-detect from URL',
     startDownload: 'Start Download',
     openInCobalt: 'Open in Cobalt (for YouTube & supported sites)',
+    openExternal: 'Open in Cobalt externally',
+    mediaVideo: 'Download video',
+    mediaAudio: 'Download MP3 audio',
+    mediaDetected: 'Supported platform — pick format:',
+    resolving: 'Resolving download link…',
+    mediaReady: 'Link ready — download started',
+    mediaFail: 'All servers failed to resolve',
+    mediaFailHint: 'Try the (Open in Cobalt) button or retry later',
+    platform_youtube: 'YouTube',
+    platform_tiktok: 'TikTok',
+    platform_instagram: 'Instagram',
+    platform_twitter: 'Twitter / X',
+    platform_facebook: 'Facebook',
+    platform_soundcloud: 'SoundCloud',
+    platform_vk: 'VK',
+    platform_dailymotion: 'Dailymotion',
+    platform_twitch: 'Twitch',
+    platform_pinterest: 'Pinterest',
+    platform_tumblr: 'Tumblr',
+    platform_bilibili: 'Bilibili',
+    platform_rutube: 'Rutube',
+    platform_bluesky: 'Bluesky',
+    platform_other: 'Supported platform',
     settings: 'Settings',
     autoOpen: 'Auto-open completed',
     autoOpenDesc: 'Open files automatically after download',
@@ -143,7 +190,10 @@ const toastContainer = document.getElementById('toastContainer');
 const installBanner = document.getElementById('installBanner');
 const installBtn = document.getElementById('installBtn');
 const langBtn = document.getElementById('langBtn');
-const youtubeHint = document.getElementById('youtubeHint');
+const mediaPanel = document.getElementById('mediaPanel');
+const mediaPlatform = document.getElementById('mediaPlatform');
+const mediaVideoBtn = document.getElementById('mediaVideoBtn');
+const mediaAudioBtn = document.getElementById('mediaAudioBtn');
 const openInCobaltBtn = document.getElementById('openInCobaltBtn');
 const downloadsTitle = document.getElementById('downloadsTitle');
 
@@ -826,7 +876,15 @@ function applyLanguage() {
   const submitBtn = addForm.querySelector('button[type="submit"]');
   if (submitBtn) submitBtn.innerHTML = submitBtn.innerHTML.replace(/>.*</, `>${t('startDownload')}<`);
   
-  if (openInCobaltBtn) openInCobaltBtn.innerHTML = openInCobaltBtn.innerHTML.replace(/>.*</, `>${t('openInCobalt')}<`);
+  if (mediaVideoBtn) mediaVideoBtn.querySelector('span').textContent = t('mediaVideo');
+  if (mediaAudioBtn) mediaAudioBtn.querySelector('span').textContent = t('mediaAudio');
+  if (openInCobaltBtn) {
+    const svg = openInCobaltBtn.querySelector('svg');
+    openInCobaltBtn.textContent = '';
+    if (svg) openInCobaltBtn.appendChild(svg);
+    openInCobaltBtn.appendChild(document.createTextNode(t('openExternal')));
+  }
+  updateMediaPanel();
   
   // Settings modal
   const settingsTitle = document.getElementById('settingsTitle');
@@ -886,6 +944,55 @@ function applySettings() {
   updateWakeLock();
 }
 
+// Media panel & engine integration
+function updateMediaPanel() {
+  if (!mediaPanel || !urlInput) return;
+  const url = urlInput.value.trim();
+  const media = url && isMediaUrl(url);
+  mediaPanel.style.display = media ? 'flex' : 'none';
+  if (media && mediaPlatform) {
+    mediaPlatform.textContent = `${t('platform_' + platformKey(url))} — ${t('mediaDetected')}`;
+  }
+}
+
+async function startMediaDownload(mode) {
+  const url = urlInput.value.trim();
+  if (!url || !isMediaUrl(url)) return;
+
+  mediaVideoBtn.disabled = true;
+  mediaAudioBtn.disabled = true;
+  showToast('info', t('resolving'), url);
+
+  const res = await resolveMedia(url, mode);
+
+  mediaVideoBtn.disabled = false;
+  mediaAudioBtn.disabled = false;
+
+  if (!res.ok) {
+    showToast('error', t('mediaFail'), t('mediaFailHint'));
+    return;
+  }
+
+  if (res.picker && res.picker.length) {
+    // Carousel / multiple items (e.g. Instagram posts)
+    res.picker.forEach((item, i) => {
+      const name = (res.filename || 'media') + (res.picker.length > 1 ? ` (${i + 1})` : '');
+      addDownload(item.url, name);
+    });
+    if (res.audio) addDownload(res.audio, (res.filename || 'audio') + '.mp3');
+    showToast('success', t('mediaReady'), `${res.picker.length} ×`);
+  } else if (res.url) {
+    addDownload(res.url, res.filename || undefined);
+    showToast('success', t('mediaReady'), res.filename || url);
+  } else {
+    showToast('error', t('mediaFail'), t('mediaFailHint'));
+    return;
+  }
+
+  urlInput.value = '';
+  updateMediaPanel();
+}
+
 // Event Listeners
 function setupEventListeners() {
   addForm.addEventListener('submit', (e) => {
@@ -899,19 +1006,19 @@ function setupEventListeners() {
     urlInput.focus();
   });
 
-  // YouTube URL detection
-  urlInput.addEventListener('input', () => {
-    const url = urlInput.value.trim();
-    const isYouTube = url.match(/^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be|youtube-nocookie\.com)\//i);
-    youtubeHint.style.display = isYouTube ? 'block' : 'none';
-  });
+  // Social media URL detection
+  urlInput.addEventListener('input', updateMediaPanel);
 
-  // Open in Cobalt button
+  // Media download buttons
+  mediaVideoBtn.addEventListener('click', () => startMediaDownload('auto'));
+  mediaAudioBtn.addEventListener('click', () => startMediaDownload('audio'));
+
+  // Open in Cobalt externally (fallback)
   openInCobaltBtn.addEventListener('click', () => {
     const url = urlInput.value.trim();
     if (url) {
       window.open(`https://cobalt.tools/?url=${encodeURIComponent(url)}`, '_blank');
-      showToast('info', t('openInCobalt'), url);
+      showToast('info', t('openExternal'), url);
     }
   });
 
@@ -952,6 +1059,7 @@ function setupEventListeners() {
     const text = e.clipboardData.getData('text').trim();
     if (text.match(/^https?:\/\//)) {
       urlInput.value = text;
+      updateMediaPanel();
       filenameInput.focus();
     }
   });

@@ -199,6 +199,18 @@
     }
     .add-form .btn-primary { width: 100%; padding: 14px; font-size: 1rem; }
 
+    /* Media panel */
+    .media-detected {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 0.8125rem; font-weight: 600; color: var(--accent);
+      background: var(--accent-light); border-radius: var(--radius-sm);
+      padding: 9px 12px;
+    }
+    .media-detected svg { width: 16px; height: 16px; flex-shrink: 0; }
+    .media-actions { display: flex; gap: 8px; }
+    .media-actions .btn { flex: 1; padding: 12px; font-size: 0.8125rem; }
+    .media-external { width: 100%; font-size: 0.75rem; padding: 6px; }
+
     /* Downloads List */
     .section-header {
       display: flex;
@@ -397,10 +409,24 @@
               <input type="text" id="filenameInput" placeholder="يستخرج تلقائياً من الرابط" autocomplete="off" aria-label="Filename">
             </div>
           </div>
-          <div class="input-group" id="youtubeHint" style="display: none;">
-            <button type="button" class="btn btn-secondary" id="openInCobaltBtn" style="width: 100%;">
+          <div class="input-group" id="mediaPanel" style="display: none;">
+            <div class="media-detected">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+              <span id="mediaPlatform"></span>
+            </div>
+            <div class="media-actions">
+              <button type="button" class="btn btn-primary" id="mediaVideoBtn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+                <span>تحميل فيديو</span>
+              </button>
+              <button type="button" class="btn btn-secondary" id="mediaAudioBtn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+                <span>تحميل صوت MP3</span>
+              </button>
+            </div>
+            <button type="button" class="btn btn-ghost media-external" id="openInCobaltBtn">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-              فتح في Cobalt (لليوتيوب والمواقع المدعومة)
+              فتح في Cobalt خارجياً
             </button>
           </div>
           <button type="submit" class="btn btn-primary">

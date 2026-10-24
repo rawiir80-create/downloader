@@ -1,11 +1,12 @@
 // Service Worker for Downloader PWA
 // Provides offline support, caching, and background sync
 
-const CACHE_NAME = 'downloader-v1';
+const CACHE_NAME = 'downloader-v3';
 const STATIC_ASSETS = [
   './',
   './index.html',
   './app.js',
+  './media.js',
   './manifest.json',
   './icon.svg',
   './icon-192.png',
