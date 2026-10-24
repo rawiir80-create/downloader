@@ -96,6 +96,18 @@
     }
     .logo svg { width: 28px; height: 28px; color: var(--accent); flex-shrink: 0; }
     .header-actions { display: flex; align-items: center; gap: 8px; }
+    .lang-btn {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      color: var(--fg);
+      padding: 6px 12px;
+      border-radius: var(--radius-sm);
+      font-size: 0.75rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all var(--transition);
+    }
+    .lang-btn:hover { background: var(--bg-elevated); border-color: var(--border-hover); }
     .btn {
       display: inline-flex;
       align-items: center;
@@ -162,10 +174,10 @@
       color: var(--fg-muted);
     }
     .input-wrapper { position: relative; display: flex; align-items: center; }
-    .input-wrapper svg { position: absolute; left: 12px; width: 20px; height: 20px; color: var(--fg-muted); pointer-events: none; }
+    .input-wrapper svg { position: absolute; right: 12px; width: 20px; height: 20px; color: var(--fg-muted); pointer-events: none; }
     .input-wrapper input, .input-wrapper select {
       width: 100%;
-      padding: 12px 16px 12px 44px;
+      padding: 12px 44px 12px 16px;
       background: var(--bg);
       border: 1px solid var(--border);
       border-radius: var(--radius-sm);
@@ -173,13 +185,18 @@
       font-size: 0.9375rem;
       font-family: inherit;
       transition: all var(--transition);
+      direction: ltr;
+      text-align: right;
     }
     .input-wrapper input:focus, .input-wrapper select:focus {
       outline: none;
       border-color: var(--accent);
       box-shadow: 0 0 0 3px var(--accent-light);
     }
-    .input-wrapper input::placeholder { color: var(--fg-muted); }
+    .input-wrapper input::placeholder {
+      color: var(--fg-muted);
+      text-align: right;
+    }
     .add-form .btn-primary { width: 100%; padding: 14px; font-size: 1rem; }
 
     /* Downloads List */
@@ -353,6 +370,7 @@
         <span>Downloader</span>
       </div>
       <div class="header-actions">
+        <button class="lang-btn" id="langBtn" aria-label="Toggle language">EN</button>
         <button class="btn btn-ghost" id="settingsBtn" aria-label="Settings">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
         </button>
@@ -366,36 +384,42 @@
       <section class="add-section" id="addSection">
         <form class="add-form" id="addForm">
           <div class="input-group">
-            <label for="urlInput">Download URL</label>
+            <label for="urlInput">رابط التحميل</label>
             <div class="input-wrapper">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 0 1-9 9c2.52 0 4.93-1 6.74-2.74L21 8"/><path d="M21 3a5 5 0 0 1-5 5"/><path d="M3 21c0-2.52 1-4.93 2.74-6.74L3 16"/><path d="M3 16c0 2.52 1 4.93 2.74 6.74L3 21"/></svg>
-              <input type="url" id="urlInput" placeholder="https://example.com/file.zip" required autocomplete="url" aria-label="Download URL">
+              <input type="url" id="urlInput" placeholder="https://example.com/file.zip" required autocomplete="url" aria-label="Download URL" dir="ltr">
             </div>
           </div>
           <div class="input-group">
-            <label for="filenameInput">Filename (optional)</label>
+            <label for="filenameInput">اسم الملف (اختياري)</label>
             <div class="input-wrapper">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-              <input type="text" id="filenameInput" placeholder="Auto-detect from URL" autocomplete="off" aria-label="Filename">
+              <input type="text" id="filenameInput" placeholder="يستخرج تلقائياً من الرابط" autocomplete="off" aria-label="Filename">
             </div>
+          </div>
+          <div class="input-group" id="youtubeHint" style="display: none;">
+            <button type="button" class="btn btn-secondary" id="openInCobaltBtn" style="width: 100%;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+              فتح في Cobalt (لليوتيوب والمواقع المدعومة)
+            </button>
           </div>
           <button type="submit" class="btn btn-primary">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-            Start Download
+            بدء التحميل
           </button>
         </form>
       </section>
 
       <!-- Downloads List -->
       <div class="section-header">
-        <h2 class="section-title">Downloads</h2>
+        <h2 class="section-title" id="downloadsTitle">التحميلات</h2>
         <span class="section-count" id="downloadCount">0</span>
       </div>
       <div class="downloads-list" id="downloadsList" role="list" aria-label="Active downloads">
         <div class="empty-state" id="emptyState">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-          <h3>No downloads yet</h3>
-          <p>Add a URL above to start downloading</p>
+          <h3>لا توجد تحميلات بعد</h3>
+          <p>أضف رابط أعلاه لبدء التحميل</p>
         </div>
       </div>
     </div>
@@ -405,7 +429,7 @@
   <div class="modal-overlay" id="settingsModal" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
     <div class="modal">
       <div class="modal-header">
-        <h2 class="modal-title" id="settingsTitle">Settings</h2>
+        <h2 class="modal-title" id="settingsTitle">الإعدادات</h2>
         <button class="btn btn-ghost" id="closeSettings" aria-label="Close settings">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         </button>
@@ -413,45 +437,45 @@
       <div class="modal-body">
         <div class="setting-group">
           <div class="setting-label">
-            <span class="setting-label-text">Auto-open completed</span>
-            <span class="setting-label-desc">Open files automatically after download</span>
+            <span class="setting-label-text">فتح تلقائي بعد التحميل</span>
+            <span class="setting-label-desc">فتح الملفات تلقائياً بعد اكتمال التحميل</span>
           </div>
           <label class="toggle"><input type="checkbox" id="autoOpenToggle" checked><span class="toggle-slider"></span></label>
         </div>
         <div class="setting-group">
           <div class="setting-label">
-            <span class="setting-label-text">Concurrent downloads</span>
-            <span class="setting-label-desc">Maximum simultaneous downloads</span>
+            <span class="setting-label-text">تحميلات متزامنة</span>
+            <span class="setting-label-desc">الحد الأقصى للتحميلات في نفس الوقت</span>
           </div>
           <div class="select-wrapper">
             <select id="concurrentSelect" aria-label="Concurrent downloads">
-              <option value="1">1 at a time</option>
-              <option value="2" selected>2 at a time</option>
-              <option value="3">3 at a time</option>
-              <option value="4">4 at a time</option>
+              <option value="1">واحد في كل مرة</option>
+              <option value="2" selected>اثنين في نفس الوقت</option>
+              <option value="3">ثلاثة في نفس الوقت</option>
+              <option value="4">أربعة في نفس الوقت</option>
             </select>
           </div>
         </div>
         <div class="setting-group">
           <div class="setting-label">
-            <span class="setting-label-text">Show notifications</span>
-            <span class="setting-label-desc">Browser notifications for completed downloads</span>
+            <span class="setting-label-text">عرض الإشعارات</span>
+            <span class="setting-label-desc">إشعارات المتصفح عند اكتمال التحميل</span>
           </div>
           <label class="toggle"><input type="checkbox" id="notifyToggle" checked><span class="toggle-slider"></span></label>
         </div>
         <div class="setting-group">
           <div class="setting-label">
-            <span class="setting-label-text">Keep screen awake</span>
-            <span class="setting-label-desc">Prevent sleep during active downloads</span>
+            <span class="setting-label-text">إبقاء الشاشة مستيقظة</span>
+            <span class="setting-label-desc">منع النوم أثناء التحميلات النشطة</span>
           </div>
           <label class="toggle"><input type="checkbox" id="wakeLockToggle"><span class="toggle-slider"></span></label>
         </div>
         <div class="setting-group">
           <div class="setting-label">
-            <span class="setting-label-text">Clear history</span>
-            <span class="setting-label-desc">Remove all completed downloads from list</span>
+            <span class="setting-label-text">مسح السجل</span>
+            <span class="setting-label-desc">إزالة جميع التحميلات المكتملة من القائمة</span>
           </div>
-          <button class="btn btn-secondary" id="clearHistoryBtn" style="width: 100%;">Clear History</button>
+          <button class="btn btn-secondary" id="clearHistoryBtn" style="width: 100%;">مسح السجل</button>
         </div>
       </div>
     </div>
@@ -464,10 +488,10 @@
   <div class="install-banner hidden" id="installBanner">
     <div class="install-card">
       <div class="install-info">
-        <h4>Install Downloader</h4>
-        <p>Add to home screen for app-like experience</p>
+        <h4>ثبت Downloader</h4>
+        <p>أضف للشاشة الرئيسية لتجربة كتطبيق أصلي</p>
       </div>
-      <button class="btn" id="installBtn">Install</button>
+      <button class="btn" id="installBtn">تثبيت</button>
     </div>
   </div>
 

@@ -17,8 +17,111 @@ let settings = {
   autoOpen: true,
   maxConcurrent: 2,
   notifications: true,
-  wakeLock: false
+  wakeLock: false,
+  language: 'ar' // 'ar' or 'en'
 };
+
+// Translations
+const T = {
+  ar: {
+    downloads: 'التحميلات',
+    noDownloads: 'لا توجد تحميلات بعد',
+    addUrl: 'أضف رابط أعلاه لبدء التحميل',
+    downloadUrl: 'رابط التحميل',
+    filename: 'اسم الملف (اختياري)',
+    autoDetect: 'يستخرج تلقائياً من الرابط',
+    startDownload: 'بدء التحميل',
+    openInCobalt: 'فتح في Cobalt (لليوتيوب والمواقع المدعومة)',
+    settings: 'الإعدادات',
+    autoOpen: 'فتح تلقائي بعد التحميل',
+    autoOpenDesc: 'فتح الملفات تلقائياً بعد اكتمال التحميل',
+    concurrent: 'تحميلات متزامنة',
+    concurrentDesc: 'الحد الأقصى للتحميلات في نفس الوقت',
+    notifications: 'عرض الإشعارات',
+    notificationsDesc: 'إشعارات المتصفح عند اكتمال التحميل',
+    wakeLock: 'إبقاء الشاشة مستيقظة',
+    wakeLockDesc: 'منع النوم أثناء التحميلات النشطة',
+    clearHistory: 'مسح السجل',
+    clearHistoryDesc: 'إزالة جميع التحميلات المكتملة من القائمة',
+    clearConfirm: 'مسح جميع التحميلات المكتملة من السجل؟',
+    addedToQueue: 'تمت إضافة للتحميل',
+    downloadComplete: 'اكتمل التحميل',
+    downloadFailed: 'فشل التحميل',
+    installed: 'تم التثبيت',
+    addedToHome: 'تم إضافة Downloader للشاشة الرئيسية',
+    pause: 'إيقاف',
+    resume: 'استئناف',
+    cancel: 'إلغاء',
+    retry: 'إعادة محاولة',
+    remove: 'إزالة',
+    open: 'فتح',
+    queued: 'في الانتظار',
+    downloading: 'جاري التحميل',
+    paused: 'متوقف',
+    complete: 'مكتمل',
+    error: 'خطأ',
+    openFileMsg: 'استخدم مدير الملفات لفتح الملفات المحملة',
+    clearSuccess: 'تم مسح التحميلات المكتملة',
+    oneAtTime: 'واحد في كل مرة',
+    twoAtTime: 'اثنين في نفس الوقت',
+    threeAtTime: 'ثلاثة في نفس وقت',
+    fourAtTime: 'أربعة في نفس وقت',
+    installApp: 'ثبت Downloader',
+    installDesc: 'أضف للشاشة الرئيسية لتجربة كتطبيق أصلي',
+    installBtn: 'تثبيت'
+  },
+  en: {
+    downloads: 'Downloads',
+    noDownloads: 'No downloads yet',
+    addUrl: 'Add a URL above to start downloading',
+    downloadUrl: 'Download URL',
+    filename: 'Filename (optional)',
+    autoDetect: 'Auto-detect from URL',
+    startDownload: 'Start Download',
+    openInCobalt: 'Open in Cobalt (for YouTube & supported sites)',
+    settings: 'Settings',
+    autoOpen: 'Auto-open completed',
+    autoOpenDesc: 'Open files automatically after download',
+    concurrent: 'Concurrent downloads',
+    concurrentDesc: 'Maximum simultaneous downloads',
+    notifications: 'Show notifications',
+    notificationsDesc: 'Browser notifications for completed downloads',
+    wakeLock: 'Keep screen awake',
+    wakeLockDesc: 'Prevent sleep during active downloads',
+    clearHistory: 'Clear history',
+    clearHistoryDesc: 'Remove all completed downloads from list',
+    clearConfirm: 'Clear all completed downloads from history?',
+    addedToQueue: 'Added to queue',
+    downloadComplete: 'Download complete',
+    downloadFailed: 'Download failed',
+    installed: 'Installed',
+    addedToHome: 'Downloader added to home screen',
+    pause: 'Pause',
+    resume: 'Resume',
+    cancel: 'Cancel',
+    retry: 'Retry',
+    remove: 'Remove',
+    open: 'Open',
+    queued: 'Queued',
+    downloading: 'Downloading',
+    paused: 'Paused',
+    complete: 'Complete',
+    error: 'Error',
+    openFileMsg: 'Use your file manager to open downloaded files',
+    clearSuccess: 'Completed downloads removed',
+    oneAtTime: '1 at a time',
+    twoAtTime: '2 at a time',
+    threeAtTime: '3 at a time',
+    fourAtTime: '4 at a time',
+    installApp: 'Install Downloader',
+    installDesc: 'Add to home screen for app-like experience',
+    installBtn: 'Install'
+  }
+};
+
+function t(key) {
+  return T[settings.language][key] || key;
+}
 
 // DOM Elements
 const addSection = document.getElementById('addSection');
@@ -39,6 +142,10 @@ const clearHistoryBtn = document.getElementById('clearHistoryBtn');
 const toastContainer = document.getElementById('toastContainer');
 const installBanner = document.getElementById('installBanner');
 const installBtn = document.getElementById('installBtn');
+const langBtn = document.getElementById('langBtn');
+const youtubeHint = document.getElementById('youtubeHint');
+const openInCobaltBtn = document.getElementById('openInCobaltBtn');
+const downloadsTitle = document.getElementById('downloadsTitle');
 
 // Icons SVG
 const ICONS = {
@@ -55,6 +162,7 @@ const ICONS = {
 async function init() {
   await initDB();
   loadSettings();
+  applyLanguage();
   await loadDownloads();
   registerServiceWorker();
   setupEventListeners();
@@ -135,7 +243,7 @@ async function clearCompletedDownloads() {
     tx.oncomplete = () => {
       document.querySelectorAll('.download-item[data-status="complete"]').forEach(el => removeItemElement(el));
       updateUI();
-      showToast('success', 'Cleared', 'Completed downloads removed');
+      showToast('success', t('installed'), t('clearSuccess'));
       resolve();
     };
     tx.onerror = () => reject(tx.error);
@@ -208,7 +316,7 @@ async function addDownload(url, customFilename) {
   downloadQueue.push(download);
   processQueue();
   updateUI();
-  showToast('info', 'Added to queue', download.filename || url);
+  showToast('info', t('addedToQueue'), download.filename || url);
   return id;
 }
 
@@ -355,8 +463,8 @@ async function startDownload(download) {
     updateItemUI(download);
     activeDownloads.delete(download.id);
 
-    showToast('success', 'Download complete', download.filename);
-    if (settings.notifications) showNotification('Download Complete', download.filename);
+    showToast('success', t('downloadComplete'), download.filename);
+    if (settings.notifications) showNotification(t('downloadComplete'), download.filename);
     if (settings.autoOpen && 'launchQueue' in window) {
       // File Handling API would go here
     }
@@ -459,7 +567,7 @@ function createItemElement(download) {
 function buildItemHTML(download) {
   const icon = getFileIcon(download.filename, download.mimeType);
   const statusClass = `status-${download.status}`;
-  const statusText = download.status.charAt(0).toUpperCase() + download.status.slice(1);
+  const statusText = t(download.status);
   const progressWidth = download.status === 'complete' ? 100 : download.progress;
   const progressClass = download.status === 'paused' ? 'paused' : download.status === 'error' ? 'error' : download.status === 'complete' ? 'complete' : '';
   const showProgress = ['downloading', 'paused', 'complete'].includes(download.status);
@@ -484,51 +592,51 @@ function buildItemHTML(download) {
       actionsHTML = `
         <button class="btn btn-secondary pause-btn" data-action="pause">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
-          Pause
+          ${t('pause')}
         </button>
         <button class="btn btn-secondary cancel-btn" data-action="cancel">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-          Cancel
+          ${t('cancel')}
         </button>
       `;
     } else if (download.status === 'paused') {
       actionsHTML = `
         <button class="btn btn-primary resume-btn" data-action="resume">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-          Resume
+          ${t('resume')}
         </button>
         <button class="btn btn-secondary cancel-btn" data-action="cancel">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-          Cancel
+          ${t('cancel')}
         </button>
       `;
     } else if (download.status === 'error') {
       actionsHTML = `
         <button class="btn btn-primary retry-btn" data-action="retry">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
-          Retry
+          ${t('retry')}
         </button>
         <button class="btn btn-secondary remove-btn" data-action="remove">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-          Remove
+          ${t('remove')}
         </button>
       `;
     } else if (download.status === 'complete') {
       actionsHTML = `
         <button class="btn btn-secondary open-btn" data-action="open">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-          Open
+          ${t('open')}
         </button>
         <button class="btn btn-secondary remove-btn" data-action="remove">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-          Remove
+          ${t('remove')}
         </button>
       `;
     } else { // queued
       actionsHTML = `
         <button class="btn btn-secondary cancel-btn" data-action="cancel">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-          Cancel
+          ${t('cancel')}
         </button>
       `;
     }
@@ -600,7 +708,7 @@ function attachItemListeners(item) {
 function openFile(download) {
   // In a real app, we'd use File System Access API or launchQueue
   // For now, just show toast
-  showToast('info', 'Open file', 'Use your file manager to open downloaded files');
+  showToast('info', t('open'), t('openFileMsg'));
 }
 
 function restoreDownload(download) {
@@ -688,10 +796,88 @@ function loadSettings() {
     notifyToggle.checked = settings.notifications;
     wakeLockToggle.checked = settings.wakeLock;
   }
+  applyLanguage();
 }
 
 function saveSettings() {
   localStorage.setItem('downloader_settings', JSON.stringify(settings));
+}
+
+function applyLanguage() {
+  const isRTL = settings.language === 'ar';
+  document.documentElement.lang = settings.language;
+  document.documentElement.dir = isRTL ? 'rtl' : 'ltr';
+  langBtn.textContent = isRTL ? 'EN' : 'عربي';
+  
+  // Update static text elements
+  if (downloadsTitle) downloadsTitle.textContent = t('downloads');
+  if (emptyState) {
+    emptyState.querySelector('h3').textContent = t('noDownloads');
+    emptyState.querySelector('p').textContent = t('addUrl');
+  }
+  if (urlInput) {
+    urlInput.placeholder = 'https://example.com/file.zip';
+    urlInput.parentElement.querySelector('label').textContent = t('downloadUrl');
+  }
+  if (filenameInput) {
+    filenameInput.placeholder = t('autoDetect');
+    filenameInput.parentElement.querySelector('label').textContent = t('filename');
+  }
+  const submitBtn = addForm.querySelector('button[type="submit"]');
+  if (submitBtn) submitBtn.innerHTML = submitBtn.innerHTML.replace(/>.*</, `>${t('startDownload')}<`);
+  
+  if (openInCobaltBtn) openInCobaltBtn.innerHTML = openInCobaltBtn.innerHTML.replace(/>.*</, `>${t('openInCobalt')}<`);
+  
+  // Settings modal
+  const settingsTitle = document.getElementById('settingsTitle');
+  if (settingsTitle) settingsTitle.textContent = t('settings');
+  const labels = document.querySelectorAll('.setting-label-text');
+  const descs = document.querySelectorAll('.setting-label-desc');
+  if (labels[0]) labels[0].textContent = t('autoOpen');
+  if (descs[0]) descs[0].textContent = t('autoOpenDesc');
+  if (labels[1]) labels[1].textContent = t('concurrent');
+  if (descs[1]) descs[1].textContent = t('concurrentDesc');
+  if (labels[2]) labels[2].textContent = t('notifications');
+  if (descs[2]) descs[2].textContent = t('notificationsDesc');
+  if (labels[3]) labels[3].textContent = t('wakeLock');
+  if (descs[3]) descs[3].textContent = t('wakeLockDesc');
+  if (labels[4]) labels[4].textContent = t('clearHistory');
+  if (descs[4]) descs[4].textContent = t('clearHistoryDesc');
+  if (clearHistoryBtn) clearHistoryBtn.textContent = t('clearHistory');
+  
+  // Concurrent select options
+  if (concurrentSelect) {
+    const options = concurrentSelect.options;
+    if (options[0]) options[0].textContent = t('oneAtTime');
+    if (options[1]) options[1].textContent = t('twoAtTime');
+    if (options[2]) options[2].textContent = t('threeAtTime');
+    if (options[3]) options[3].textContent = t('fourAtTime');
+  }
+  
+  // Install banner
+  const installInfo = installBanner.querySelector('.install-info');
+  if (installInfo) {
+    installInfo.querySelector('h4').textContent = t('installApp');
+    installInfo.querySelector('p').textContent = t('installDesc');
+  }
+  if (installBtn) installBtn.textContent = t('installBtn');
+  
+  // Update status badges for existing items
+  document.querySelectorAll('.download-item').forEach(item => {
+    const badge = item.querySelector('.status-badge');
+    if (badge) {
+      const status = item.dataset.status;
+      badge.textContent = t(status);
+    }
+    // Update action buttons
+    item.querySelectorAll('[data-action]').forEach(btn => {
+      const action = btn.dataset.action;
+      const span = btn.querySelector('svg') ? btn.childNodes[btn.childNodes.length - 1] : null;
+      if (span && span.nodeType === Node.TEXT_NODE) {
+        span.textContent = ' ' + t(action);
+      }
+    });
+  });
 }
 
 function applySettings() {
@@ -713,6 +899,29 @@ function setupEventListeners() {
     urlInput.focus();
   });
 
+  // YouTube URL detection
+  urlInput.addEventListener('input', () => {
+    const url = urlInput.value.trim();
+    const isYouTube = url.match(/^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be|youtube-nocookie\.com)\//i);
+    youtubeHint.style.display = isYouTube ? 'block' : 'none';
+  });
+
+  // Open in Cobalt button
+  openInCobaltBtn.addEventListener('click', () => {
+    const url = urlInput.value.trim();
+    if (url) {
+      window.open(`https://cobalt.tools/?url=${encodeURIComponent(url)}`, '_blank');
+      showToast('info', t('openInCobalt'), url);
+    }
+  });
+
+  // Language toggle
+  langBtn.addEventListener('click', () => {
+    settings.language = settings.language === 'ar' ? 'en' : 'ar';
+    saveSettings();
+    applyLanguage();
+  });
+
   settingsBtn.addEventListener('click', () => settingsModal.classList.add('open'));
   closeSettings.addEventListener('click', () => settingsModal.classList.remove('open'));
   settingsModal.addEventListener('click', (e) => {
@@ -725,7 +934,7 @@ function setupEventListeners() {
   wakeLockToggle.addEventListener('change', () => { settings.wakeLock = wakeLockToggle.checked; saveSettings(); updateWakeLock(); });
 
   clearHistoryBtn.addEventListener('click', async () => {
-    if (confirm('Clear all completed downloads from history?')) {
+    if (confirm(t('clearConfirm'))) {
       await clearCompletedDownloads();
       settingsModal.classList.remove('open');
     }
@@ -772,7 +981,7 @@ function checkInstallPrompt() {
   window.addEventListener('appinstalled', () => {
     installBanner.classList.add('hidden');
     deferredPrompt = null;
-    showToast('success', 'Installed', 'Downloader added to home screen');
+    showToast('success', t('installed'), t('addedToHome'));
   });
 
   installBtn.addEventListener('click', async () => {

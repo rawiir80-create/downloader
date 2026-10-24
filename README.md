@@ -1,18 +1,22 @@
-# Downloader - Modern PWA Download Manager
+# Downloader - Modern PWA Download Manager / مدير تحميلات حديث
 
 A clean, modern download manager built as a Progressive Web App (PWA). Install it on your Android phone like a native app.
 
-## Features
+تطبيق مدير تحميلات حديث يعمل كـ PWA. ثبته على هاتفك الأندرويد كتطبيق أصلي.
 
-- 🎯 **Modern, simple UI** - Clean dark/light mode design
-- ⚡ **Fast downloads** - Streaming with progress, speed, ETA
-- ⏸️ **Pause/Resume** - Pause downloads and resume later
-- 📱 **Installable PWA** - Add to home screen, works offline
-- 🔔 **Notifications** - Get notified when downloads complete
-- 🌙 **Dark/Light mode** - Automatic system theme detection
-- 💾 **Persistent history** - Downloads saved in IndexedDB
-- ⚙️ **Settings** - Concurrent downloads, auto-open, wake lock
-- 📋 **Paste to add** - Paste URL anywhere to start download
+## Features / المميزات
+
+- 🎯 **Modern, simple UI** - Clean dark/light mode design / واجهة حديثة بسيطة - وضع ليلي/نهاري
+- ⚡ **Fast downloads** - Streaming with progress, speed, ETA / تحميل سريع مع تقدم، سرعة، وقت متبقي
+- ⏸️ **Pause/Resume** - Pause downloads and resume later / إيقاف واستكمال التحميلات
+- 📱 **Installable PWA** - Add to home screen, works offline / يثبت على الشاشة الرئيسية، يعمل أوفلاين
+- 🔔 **Notifications** - Get notified when downloads complete / إشعارات عند اكتمال التحميل
+- 🌙 **Dark/Light mode** - Automatic system theme detection / كشف تلقائي لثيم النظام
+- 💾 **Persistent history** - Downloads saved in IndexedDB / سجل تحميلات محفوظ في IndexedDB
+- ⚙️ **Settings** - Concurrent downloads, auto-open, wake lock / إعدادات: تحميلات متزامنة، فتح تلقائي، إبقاء الشاشة
+- 📋 **Paste to add** - Paste URL anywhere to start download / لصق رابط للبدء
+- 🌐 **Multi-language** - Arabic (RTL) & English support / دعم العربية (RTL) والإنجليزية
+- 🔗 **YouTube & Social** - Open in Cobalt for YouTube/supported sites / زر يوتيوب يفتح في Cobalt
 
 ## Quick Start (Easiest)
 
@@ -53,23 +57,23 @@ Open `generate-icons.html` in Chrome on your phone or computer → click "Genera
 
 ```
 downloader/
-├── index.html          # Main app
-├── app.js              # Application logic
+├── index.html          # Main app / التطبيق الرئيسي
+├── app.js              # Application logic / منطق التطبيق
 ├── sw.js               # Service Worker
 ├── manifest.json       # PWA manifest
-├── icon.svg            # Source icon
-├── generate-icons.html # Icon generator tool
-├── icon-*.png          # Generated icons (run generator)
+├── icon.svg            # Source icon / الأيقونة الأصلية
+├── generate-icons.html # Icon generator tool / أداة توليد الأيقونات
+├── icon-*.png          # Generated icons (run generator) / أيقونات مولدة
 └── README.md           # This file
 ```
 
-## Permissions Used
+## Permissions Used / الصلاحيات المستخدمة
 
-- **Notifications** - Download completion alerts
-- **Wake Lock** - Keep screen on during downloads (optional)
-- **Storage** - IndexedDB for download history
+- **Notifications** - Download completion alerts / إشعارات اكتمال التحميل
+- **Wake Lock** - Keep screen on during downloads (optional) / إبقاء الشاشة مستيقظة (اختياري)
+- **Storage** - IndexedDB for download history / تخزين سجل التحميلات
 
-## Browser Support
+## Browser Support / دعم المتصفحات
 
 - Chrome 80+ (Android)
 - Edge 80+ (Android)
@@ -77,34 +81,46 @@ downloader/
 - Samsung Internet 12+
 - Safari 16.4+ (iOS - limited PWA support)
 
-## How It Works
+## How It Works / كيف يعمل
 
-1. **Downloads** use Fetch API + Streams for progress tracking
-2. **Files** saved via browser's native download (creates in Downloads folder)
-3. **Progress** calculated from stream chunks
-4. **Pause/Resume** via AbortController (restarts from beginning due to browser limitations)
-5. **History** stored in IndexedDB, survives browser restarts
+1. **Downloads** use Fetch API + Streams for progress tracking / Fetch API + Streams للتقدم
+2. **Files** saved via browser's native download (creates in Downloads folder) / حفظ عبر المتصفح في مجلد التنزيلات
+3. **Progress** calculated from stream chunks / التقدم محسوب من قطع الاستREAM
+4. **Pause/Resume** via AbortController (restarts from beginning due to browser limitations) / إيقاف/استكمال عبر AbortController (يعيد التحميل من البداية)
+5. **History** stored in IndexedDB, survives browser restarts / السجل في IndexedDB، يبقى بعد إعادة تشغيل المتصفح
 
-## Known Limitations
+## Known Limitations / قيود معروفة
 
-- ❌ Can't intercept system-wide downloads (like desktop IDM)
-- ❌ Pause/Resume restarts download (browser Range request limits)
-- ❌ No background downloads when app closed (Service Worker limits)
-- ❌ Large files (>2GB) may fail (browser memory limits)
-- ✅ Best for: direct file links, documents, media, archives
+- ❌ Can't intercept system-wide downloads (like desktop IDM) / لا يعترض تحميلات النظام
+- ❌ Pause/Resume restarts download (browser Range request limits) / الإيقاف/الاستكمال يعيد التحميل
+- ❌ No background downloads when app closed (Service Worker limits) / لا تحميل في الخلفية عند إغلاق التطبيق
+- ❌ Large files (>2GB) may fail (browser memory limits) / ملفات كبيرة (>2GB) قد تفشل
+- ✅ Best for: direct file links, documents, media, archives / الأفضل لـ: روابط مباشرة، وثائق، وسائط، أرشيف
 
-## Customization
+## YouTube & Social Media / يوتيوب ومواقع التواصل
+
+This app downloads **direct file links only**. For YouTube, Twitter, Instagram, etc.:
+- Paste the URL → **"Open in Cobalt"** button appears
+- Click it to open [Cobalt](https://cobalt.tools) which extracts & downloads the media
+- No backend/server needed - uses external service
+
+هذا التطبيق يحمل **روابط ملفات مباشرة فقط**. لليوتيوب، تويتر، انستغرام، إلخ:
+- ألصق الرابط → زر **"افتح في Cobalt"** سيظهر
+- اضغطه ليفتح [Cobalt](https://cobalt.tools) يستخرج ويحمل الميديا
+- لا يحتاج سيرفر/باكيند - يستخدم خدمة خارجية
+
+## Customization / التخصيص
 
 Edit `index.html` CSS variables (`:root`) to change colors:
 ```css
 :root {
-  --accent: #0066FF;        /* Primary color */
-  --bg: #0A0F1A;            /* Dark background */
-  --bg-elevated: #111827;   /* Card background */
-  --radius: 12px;           /* Border radius */
+  --accent: #0066FF;        /* Primary color / اللون الأساسي */
+  --bg: #0A0F1A;            /* Dark background / خلفية داكنة */
+  --bg-elevated: #111827;   /* Card background / خلفية البطاقات */
+  --radius: 12px;           /* Border radius / استدارة الزوايا */
 }
 ```
 
-## License
+## License / الترخيص
 
-MIT - Feel free to modify and distribute.
+MIT - Feel free to modify and distribute / حر في التعديل والتوزيع.

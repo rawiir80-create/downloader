@@ -1,7 +1,7 @@
 {
-  "name": "Downloader",
+  "name": "Downloader - مدير التحميلات",
   "short_name": "Downloader",
-  "description": "Modern, simple download manager - fast and reliable",
+  "description": "مدير تحميلات حديث - سريع، بسيط، موثوق",
   "start_url": "./",
   "display": "standalone",
   "orientation": "portrait-primary",
@@ -61,9 +61,9 @@
   "categories": ["utilities", "productivity"],
   "shortcuts": [
     {
-      "name": "New Download",
-      "short_name": "Download",
-      "description": "Start a new download",
+      "name": "تحميل جديد",
+      "short_name": "تحميل",
+      "description": "بدء تحميل جديد",
       "url": "./#add",
       "icons": [{ "src": "icon-192.png", "sizes": "192x192" }]
     }
